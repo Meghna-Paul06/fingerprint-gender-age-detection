@@ -1,0 +1,35 @@
+import numpy as np
+import array
+from skimage.morphology import convex_hull_image, erosion
+from skimage.morphology import square
+
+def getTerminationBifurcation(img, mask):
+    arr1=[]
+    arr2=[]
+    img = img == 255;
+    (rows, cols) = img.shape;
+    minutiaeTerm = np.zeros(img.shape);
+    minutiaeBif = np.zeros(img.shape);
+    ridge=0;
+    bifur=0;
+
+    for i in range(1,rows-1):
+        for j in range(1,cols-1):
+            if(img[i][j] == 1):
+                block = img[i-1:i+2,j-1:j+2];
+                block_val = np.sum(block);
+                if(block_val == 2):
+                    minutiaeTerm[i,j] = 1;
+                    ridge=ridge+1;
+                    ob=[i,j];
+                    arr1.append(ob);
+                elif(block_val == 4):
+                    minutiaeBif[i,j] = 1;
+                    bifur=bifur+1;
+                    ob=[i,j];
+                    arr2.append(ob);
+    
+    mask = convex_hull_image(mask>0)
+    mask = erosion(mask, square(5))         # Structuing element for mask erosion = square(5)
+    minutiaeTerm = np.uint8(mask)*minutiaeTerm
+    return(minutiaeTerm, minutiaeBif, ridge, bifur,arr1,arr2)
